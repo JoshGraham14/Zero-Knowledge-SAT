@@ -16,7 +16,7 @@
 -   Focus on 3-SAT, the uniformity of the clauses will provide better structure to provide a zero-knowledge proof
 -   Any general SAT problem can be reduced to 3-SAT, so this still works for any SAT problem
 
-From https://cs.stackexchange.com/questions/135457/is-there-a-zero-knowledge-proof-for-sat#:~:text=3%2DSAT%20is%20used%20so,proof%20for%20SAT%20as%20well.
+From [cs.stackexchange](https://cs.stackexchange.com/questions/135457/is-there-a-zero-knowledge-proof-for-sat#:~:text=3%2DSAT%20is%20used%20so,proof%20for%20SAT%20as%20well).
 
 For each round the prover should:
 
@@ -31,3 +31,8 @@ After this is done, the verifier can ask the prover for either:
 
 -   The new formula and the permutation mappings so that he can verify that the new formula is the same as the original formula, or
 -   One clause of the new formula and the variable assignments for the variables in that clause, taken from the satisfying assignment previously committed to.
+
+
+# Notes
+- Originally was going to use the `pycrypto` module, apparently this module is dead and the new standard is a fork called `pycryptodome`
+    - [See github issue stating this](https://github.com/pycrypto/pycrypto/issues/173)
