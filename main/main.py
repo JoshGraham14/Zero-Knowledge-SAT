@@ -13,14 +13,14 @@ c: False
 d: False
 '''
 
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 # from random import shuffle
 import Crypto.Random.random as crypto_random
 from copy import deepcopy
 
 
 def swap_var_names(cnf: List[List[str]], 
-                    vars: List[str]) -> Tuple[List[List[str]], List[str]]:
+                    vars: List[str]) -> Tuple[List[List[str]], Dict[str, str]]:
     '''
     Randomly swaps the variable names in a CNF formula.
     @param cnf: Formula in CNF
@@ -41,7 +41,9 @@ def swap_var_names(cnf: List[List[str]],
                         new_cnf[i][k] = '~' + new_vars[j]
                 elif atom == var:
                     new_cnf[i][k] = new_vars[j]
-    return new_vars, new_cnf
+
+    var_swap_mapping = {new_vars[i]: vars[i] for i in range(len(vars))}
+    return new_cnf, var_swap_mapping
 
 
 
@@ -71,6 +73,28 @@ def permute_vars(cnf: List[List[str]]) \
         var_perm_mapping.append(indices)
 
     return cnf, var_perm_mapping
+
+
+def permute_clauses(cnf: List[List[str]]) \
+                -> Tuple[List[List[str]], List[List[int]]]:
+    '''
+    Permutes the clauses in a cnf formula randomly. The new permuted cnf is
+    returned along with a mapping for how the clauses were permuted. A mapping
+    can be read as follows:
+    mapping [2, 3, 1, 0] means orig_cnf[2] = permuted_cnf[0],
+    orig_cnf[3] = permuted_cnf[1], orig_cnf[1] = permuted_cnf[2], and
+    orig_cnf[0] = permuted_cnf[0].
+    @param cnf: Formula in CNF
+    @returns A 2-tuple whose first element is the new cnf formula with
+             permuted clauses and second element is the list mapping
+             how the clauses were permuted.
+    '''
+    indices = [i for i in range(len(cnf))]
+    crypto_random.shuffle(indices)
+    old_cnf = deepcopy(cnf)
+    for i in range(len(cnf)):
+        cnf[i] = old_cnf[indices[i]]
+    return cnf, indices
 
 
 def print_nice(cnf: List[List[str]], separate_lines: int=0) -> None:
@@ -119,15 +143,19 @@ def main() -> None:
     solution: dict[str, bool] = {'a': True, 'b': False, 'c': False, 'd': False}
     vars = ['a', 'b', 'c', 'd']
 
-    print('Original cnf:')
+    print('Original CNF:')
     print_nice(problem)
 
-
-    #new_vars, new_cnf = swap_var_names(problem, vars)
-    #new_cnf = permute_vars(new_cnf)
-    new_cnf, var_perm_mapping = permute_vars(problem)
+    new_cnf, new_vars = swap_var_names(problem, vars)
+    new_cnf, clause_perm_mapping = permute_clauses(new_cnf)
+    new_cnf, var_perm_mapping = permute_vars(new_cnf)
+    
+    print('New CNF:')
     print_nice(new_cnf)
-    print(var_perm_mapping)
+    print(f'Clause permutation mapping: {clause_perm_mapping}')
+    print(f'Variable permutation mapping: {var_perm_mapping}')
+    print(f'Variable swap mapping: {new_vars}')
+
 
 
 if __name__ == '__main__':
