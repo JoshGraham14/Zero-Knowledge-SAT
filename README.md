@@ -25,8 +25,25 @@ Example: in the CNF formula above, the clauses are `(a ∨ b ∨ ¬c)` and `(¬a
 Example: A satisfying mapping for the above CNF formula would be `{a: True, b: False, c: False, d: False}`
 
 # Process for zero-knowledge proof of 3-SAT
+Given a situation where there is a prover and a verifier, the verifier has a 3-SAT problem in CNF and wants to verify that the prover knows a correct mapping to satisfy the fomula. Here is the process each person must take:
 
 ## Prover
-1. Randomly swap the symbol used to represent each variable.
+1. Randomly swap the symbols used to represent each variable.
+2. Randomly permute the clauses in the CNF formula.
+3. Randomly permute the variables in each of the clauses.
+4. Swap the value of approximately 1/2 of the variables and subsequently negate those variables in the CNF formula.
+
+## Verifier
+For each round of the verification (it will take many rounds for the verifier to have a high level of confidence that the prover has a satisfying solution), the verifier has two choices:
+
+1. Choose to view the new CNF formula after all permutations, swaps, and negations have been performed, along with the mappings for how the variables and clauses were permutated, swapped, and negated; without seeing the values assigned to each variable.
+
+2. Choose to view one random clause from the new CNF formula, with the associated values of the variables.
+
+If choice 1 is selected, the verifier can reverse the negations, permutations, and swaps to confirm that the formula they were sent is in fact equivalent to the original formula.
+
+If choice 2 is selected, the verifier can confirm that the clause evaluates to true with the provided variable-value mappings.
+
+
 
 
