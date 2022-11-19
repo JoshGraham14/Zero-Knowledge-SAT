@@ -97,6 +97,66 @@ def permute_clauses(cnf: List[List[str]]) \
     return cnf, indices
 
 
+def negate_vars_randomly(cnf: List[List[str]], vars: List[str], 
+                value_mapping: Dict[str, bool]) \
+                -> Tuple[List[List[str]], List[bool], Dict[str, bool]]:
+    '''
+    Randomly negates all instances of roughly 50% of the variables, as well as
+    the value mapped to that variable to preserve satisfiability.
+    @param cnf: Formula in CNF
+    @param vars: List of the variables used in the CNF
+    @param value_mapping: Dictionary assigning True/False values to each 
+                          variable
+
+    @returns A tuple containing the CNF with the negated vars, a list 
+             describing which vars were changed, and the new mapping for the 
+             variables values
+    '''
+    # generate True/False values to associate with each variable
+    # if True, that variable will be negated
+    neg_map: List[bool] = [crypto_random.randint(0,1) == 1 for i in range(len(vars))]
+
+    for clause in cnf:
+        for i, symbol in enumerate(clause):
+            for j, var in enumerate(vars):
+                if neg_map[j]:
+                    if var == symbol:
+                        clause[i] = '~' + clause[i]
+                    elif len(symbol) == 2 and var == symbol[1]:
+                        clause[i] = clause[i][1]
+    # fix variable mapping for negated variables
+    for i, val in enumerate(neg_map):
+        if val:
+            value_mapping[vars[i]] = not value_mapping[vars[i]]
+
+    return cnf, neg_map, value_mapping
+
+
+def get_new_solution(old_solution: Dict[str, bool], vars: List[str],
+                new_var_names: Dict[str, str]) -> Dict[str, bool]:
+    '''
+    Obtain the solution to the modified CNF formula after variables have been
+    negated and have new names.
+
+    @param old_solution: The old variable-value mappings
+    @param vars: List of the variables used in the CNF
+    @param new_var_names: A dictionary containing where each key is the new
+                          name of a variable and the value is the old name
+    
+    @returns A dictionary containing a key for each variable where the value
+             is the new True/False value for that variable
+    '''
+    new_solution = {}
+    
+    for i, var in enumerate(vars):
+        new_name = new_var_names[var]
+        val = old_solution[var]
+        #print(f'{var} has been changed to {new_name}, with a value of {val}')
+        new_solution[new_name] = val
+
+    return new_solution
+
+
 def print_nice(cnf: List[List[str]], separate_lines: int=0) -> None:
     '''
     Prints a CNF formula in a readable format with unicode symbols for 
@@ -143,19 +203,23 @@ def main() -> None:
     solution: dict[str, bool] = {'a': True, 'b': False, 'c': False, 'd': False}
     vars = ['a', 'b', 'c', 'd']
 
-    print('Original CNF:')
-    print_nice(problem)
+    # print('Original CNF:')
+    # print_nice(problem)
 
+    new_cnf, neg_map, new_solution = negate_vars_randomly(problem, vars, solution)
     new_cnf, new_vars = swap_var_names(problem, vars)
     new_cnf, clause_perm_mapping = permute_clauses(new_cnf)
     new_cnf, var_perm_mapping = permute_vars(new_cnf)
+    new_solution = get_new_solution(new_solution, vars, new_vars)
     
     print('New CNF:')
     print_nice(new_cnf)
-    print(f'Clause permutation mapping: {clause_perm_mapping}')
+    print(f'New solution: {new_solution}')
     print(f'Variable permutation mapping: {var_perm_mapping}')
+    print(f'Clause permutation mapping: {clause_perm_mapping}')
     print(f'Variable swap mapping: {new_vars}')
-
+    print(f'Variable negation mapping: {neg_map}')
+    print(f'The variables are: {vars}')
 
 
 if __name__ == '__main__':
