@@ -2,8 +2,6 @@ from typing import List, Tuple, Dict
 import Crypto.Random.random as crypto_random
 from copy import deepcopy
 
-from main import print_nice
-
 
 def swap_var_names(cnf: List[List[str]], 
                     vars: List[str]) -> Tuple[List[List[str]], Dict[str, str]]:
@@ -19,7 +17,7 @@ def swap_var_names(cnf: List[List[str]],
     new_cnf = deepcopy(cnf)
     crypto_random.shuffle(new_vars)
 
-    for i, clause in enumerate(cnf):
+    for i, clause in enumerate(new_cnf):
         for k, atom in enumerate(clause):
             for j, var in enumerate(vars):
                 if len(atom) == 2:
@@ -30,7 +28,6 @@ def swap_var_names(cnf: List[List[str]],
 
     var_swap_mapping = {new_vars[i]: vars[i] for i in range(len(vars))}
     return new_cnf, var_swap_mapping
-
 
 
 def permute_vars(cnf: List[List[str]]) \
@@ -50,19 +47,20 @@ def permute_vars(cnf: List[List[str]]) \
              how the variables were permuted.
     '''
     var_perm_mapping = []
-    for clause in cnf:
+    new_cnf = deepcopy(cnf)
+    for clause in new_cnf:
         indices = [0, 1, 2]
         crypto_random.shuffle(indices)
-        old_clause = clause.copy()
+        old_clause = deepcopy(clause)
         for i in range(3):
             clause[i] = old_clause[indices[i]]
         var_perm_mapping.append(indices)
 
-    return cnf, var_perm_mapping
+    return new_cnf, var_perm_mapping
 
 
 def permute_clauses(cnf: List[List[str]]) \
-                -> Tuple[List[List[str]], List[List[int]]]:
+                -> Tuple[List[List[str]], List[int]]:
     '''
     Permutes the clauses in a cnf formula randomly. The new permuted cnf is
     returned along with a mapping for how the clauses were permuted. A mapping
@@ -77,10 +75,10 @@ def permute_clauses(cnf: List[List[str]]) \
     '''
     indices = [i for i in range(len(cnf))]
     crypto_random.shuffle(indices)
-    old_cnf = deepcopy(cnf)
+    new_cnf = deepcopy(cnf)
     for i in range(len(cnf)):
-        cnf[i] = old_cnf[indices[i]]
-    return cnf, indices
+        new_cnf[i] = cnf[indices[i]]
+    return new_cnf, indices
 
 
 def negate_vars_randomly(cnf: List[List[str]], vars: List[str], 
@@ -102,7 +100,10 @@ def negate_vars_randomly(cnf: List[List[str]], vars: List[str],
     # if True, that variable will be negated
     neg_map: List[bool] = [crypto_random.randint(0,1) == 1 for i in range(len(vars))]
 
-    for clause in cnf:
+    new_cnf = deepcopy(cnf)
+    new_solution = deepcopy(value_mapping)
+
+    for clause in new_cnf:
         for i, symbol in enumerate(clause):
             for j, var in enumerate(vars):
                 if neg_map[j]:
@@ -113,9 +114,10 @@ def negate_vars_randomly(cnf: List[List[str]], vars: List[str],
     # fix variable mapping for negated variables
     for i, val in enumerate(neg_map):
         if val:
-            value_mapping[vars[i]] = not value_mapping[vars[i]]
+            new_solution[vars[i]] = not new_solution[vars[i]]
 
-    return cnf, neg_map, value_mapping
+    neg_map_dict = dict(zip(vars, neg_map))
+    return new_cnf, neg_map_dict, new_solution
 
 
 def get_new_solution(old_solution: Dict[str, bool], vars: List[str],
@@ -133,15 +135,32 @@ def get_new_solution(old_solution: Dict[str, bool], vars: List[str],
              is the new True/False value for that variable
     '''
     new_solution = {}
-    
-    for i, var in enumerate(vars):
-        new_name = new_var_names[var]
-        val = old_solution[var]
-        #print(f'{var} has been changed to {new_name}, with a value of {val}')
-        new_solution[new_name] = val
+
+    for var in vars:
+        new_solution[var] = old_solution[new_var_names[var]]
 
     return new_solution
 
 
+def get_one_clause(cnf: List[List[str]], clause_num: int, 
+            solution: Dict[str, bool]) -> Tuple[List[str], Dict[str, bool]]:
+    '''
+    Returns a single clause from the cnf solution with the 
+    variable mapping that makes it true.
+    '''
+    new_cnf = deepcopy(cnf)
+    clause = new_cnf[clause_num]
+    clause_solution = {}
+    for var in clause:
+        if len(var) == 2:
+            clause_solution[var[1]] = solution[var[1]]
+        else:
+            clause_solution[var] = solution[var]
+
+    return clause, clause_solution
+
 if __name__ == '__main__':
-    print('This is the prover.util module!')
+    problem: List[List[str]] = [['a', 'b', '~c'], ['~a', '~b', 'd'],
+                                ['~a', 'b', '~d'], ['b', '~c', 'd']]
+    solution: Dict[str, bool] = {'a': True, 'b': False, 'c': False, 'd': False}
+    print(get_one_clause(problem, 3, solution))
