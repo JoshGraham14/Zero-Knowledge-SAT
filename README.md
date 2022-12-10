@@ -9,8 +9,10 @@
 5. In the `main` function of the `main.py` file, enter your solution for the CNF problem for the variable `solution` (a default solution is provided)
 6. In the `main` function of the `main.py` file, enter the variable names used in your cnf in the list `vars` (a default list of vars is provided)
 
-# How to run
+## How to run
 From the base directory, run `python3 main.py` if on MacOS/Linux or `python main.py` if on Windows
+
+# Background Information
 
 This is my course project for CISC 468 (Cryptography), it is a Python implementation of a zkSNARK (**Z**ero-**K**nowledge **S**uccinct **N**on-interactive **AR**guments of **K**nowledge) to prove/verify the solution of an NP-class problem.
 
