@@ -84,42 +84,23 @@ def print_nice(cnf: List[List[str]], separate_lines: int=0) -> None:
             print(')')
 
 
-def simulate():
-    problem: List[List[str]] = [['a', 'b', '~c'], ['~a', '~b', 'd'],
-                                ['~a', 'b', '~d'], ['b', '~c', 'd']]
-    solution: dict[str, bool] = {'a': True, 'b': False, 'c': False, 'd': False}
-    vars = ['a', 'b', 'c', 'd']
-    print(f'{problem = }')
-    confidence = 0
+def simulate(problem: List[List[str]], solution: Dict[str, bool], vars: List[str]) -> bool:
+    '''
+    Simulate a zero-knowledge proof protocol between a prover and a verifier. Returns True
+    if the prover can successfully prove their knowledge for n^2 rounds, where n represents
+    the number of conjunctions in the given problem. Returns False otherwise.
+    '''
     orig_cnf = copy.deepcopy(problem)
-    print(f'{orig_cnf = }')
 
-    for i in range(1000):
+    for i in range((len(orig_cnf) - 1)**2):
         print(f'\n========================================= Round {i} ==========================================\n')
-        # print(f'{orig_cnf = }')
         # Prover
         new_cnf, neg_map, new_solution = prover.negate_vars_randomly(problem, vars, solution)
-        # print('----------- Negated Vars -----------')
-        # print(f'{new_cnf = }')
-        # print(f'{neg_map = }')
-        # print(f'{new_solution = }')
         new_cnf, new_vars = prover.swap_var_names(new_cnf, vars)
-        # print('----------- Swapped Vars -----------')
-        # print(f'{new_cnf = }')
-        # print(f'{new_vars = }')
         new_cnf, clause_perm_mapping = prover.permute_clauses(new_cnf)
         new_solution = prover.get_new_solution(new_solution, vars, new_vars)
-        # print('----------- Fixed Solution -----------')
-        # print(f'{new_solution = }')
-        # print('----------- Permuted Clauses -----------')
-        # print(f'{new_cnf = }')
-        # print(f'{clause_perm_mapping = }')
         new_cnf, var_perm_mapping = prover.permute_vars(new_cnf)
-        # print('----------- Permuted Vars -----------')
-        # print(f'{new_cnf = }')
-        # print(f'{var_perm_mapping = }')
         
-
         # Verifier
         option: int = crypto_random.randint(0, 1)
 
@@ -130,25 +111,26 @@ def simulate():
             ver_cnf = verifier.swap_var_names(ver_cnf, new_vars, vars)
             ver_cnf = verifier.negate_vars(ver_cnf, neg_map)
             if ver_cnf == orig_cnf:
-                confidence += 1
                 print('Confidence gained from verifying jumbled solution')
             else:
                 print('Verification of jumbled formula went wrong, prover can\'t be trusted')
-                break
+                return False
         # Verify single clause
         else:
             clause_num: int = verifier.choose_clause(len(problem))
             # The prover then calls this function to get the clause
+            # for the verifier
             ver_clause, ver_solution = prover.get_one_clause(new_cnf, 
                                             clause_num, new_solution)
             if verifier.verify_clause(ver_clause, ver_solution):
-                confidence += 1
                 print('Confidence gained from verifying clause')
             else:
                 print('Verification of clause went wrong, prover can\'t be trusted')
                 print(f'{ver_clause = }')
                 print(f'{ver_solution = }')
-                break
+                return False
+
+    return True
 
 
 
@@ -156,32 +138,15 @@ def main() -> None:
     problem: List[List[str]] = [['a', 'b', '~c'], ['~a', '~b', 'd'],
                                 ['~a', 'b', '~d'], ['b', '~c', 'd']]
     solution: dict[str, bool] = {'a': True, 'b': False, 'c': False, 'd': False}
-    vars = ['a', 'b', 'c', 'd']
+    vars: List[str] = ['a', 'b', 'c', 'd']
 
     print('Original CNF:')
     print_nice(problem)
-    crypto_random
-    simulate()
 
-    # new_cnf, neg_map, new_solution = prover.negate_vars_randomly(problem, vars, solution)
-    # new_cnf, new_vars = prover.swap_var_names(problem, vars)
-    # new_cnf, clause_perm_mapping = prover.permute_clauses(new_cnf)
-    # new_cnf, var_perm_mapping = prover.permute_vars(new_cnf)
-    # new_solution = prover.get_new_solution(new_solution, vars, new_vars)
-    
-    # print('New CNF:')
-    # print_nice(new_cnf)
-    # print(f'New solution: {new_solution}')
-    # print(f'Variable permutation mapping: {var_perm_mapping}')
-    # print(f'Clause permutation mapping: {clause_perm_mapping}')
-    # print(f'Variable swap mapping: {new_vars}')
-    # print(f'Variable negation mapping: {neg_map}')
-    # print(f'The variables are: {vars}')
-
-    # clause, sol = get_clause(new_cnf, new_solution, 2)
-    # print('Clause: ')
-    # print_nice(clause)
-    # print(f'Solution: {sol}')
+    if simulate(problem, solution, vars):
+        print('The prover can be trusted!')
+    else:
+        print('The prover cannot be trusted!')
 
 
 if __name__ == '__main__':
