@@ -4,7 +4,7 @@
 
 1. If you don't already have the venv folder, create the environment by running `python3 -m venv venv`
 2. To activate the environment, run `venv\Scripts\activate.bat` if on Windows, `source venv/bin/activate` if on MacOS/Linux
-3. pip install -r requirements.txt to install any packages needed for the backend
+3. run `pip install -r requirements.txt` to install all necessary modules
 4. In the `main` function of the `main.py` file, enter your CNF formula for the variable `problem` (a default problem is provided)
 5. In the `main` function of the `main.py` file, enter your solution for the CNF problem for the variable `solution` (a default solution is provided)
 6. In the `main` function of the `main.py` file, enter the variable names used in your cnf in the list `vars` (a default list of vars is provided)
@@ -14,9 +14,9 @@ From the base directory, run `python3 main.py` if on MacOS/Linux or `python main
 
 # Background Information
 
-This is my course project for CISC 468 (Cryptography), it is a Python implementation of a zkSNARK (**Z**ero-**K**nowledge **S**uccinct **N**on-interactive **AR**guments of **K**nowledge) to prove/verify the solution of an NP-class problem.
+This is my course project for CISC 468 (Cryptography), it is a Python implementation of a Zero-Knowledge Proof (ZKP) to prove/verify the solution of a 3-SAT problem.
 
-I would eventually like for this implementation to be able to prove/verify the solution to any NP-class problem. However, to make this possible I have chosen to create a zkSNARK for the 3-SAT problem. 3-SAT is a subset of the Boolean Satisfiability problem where each clause in the CNF (Conjuctive Normal Form) formula contains 3 variables. Every SAT problem can be reduced to 3-SAT, furthermore, every NP-class problem can be reduced to SAT. Therefore, a zkSNARK for the 3-SAT problem can techincally be used to prove/verify any problem in the class NP.
+I would eventually like for this implementation to be able to prove/verify the solution to any NP-class problem. However, to make this possible I have chosen to create a ZKP for the 3-SAT problem. 3-SAT is a subset of the Boolean Satisfiability problem where each clause in the CNF (Conjuctive Normal Form) formula contains 3 variables. Every SAT problem can be reduced to 3-SAT, furthermore, every NP-class problem can be reduced to SAT. Therefore, a ZKP for the 3-SAT problem can techincally be used to prove/verify any problem in the class NP.
 
 Before continuing, I would like to clarify some terminology.
 
